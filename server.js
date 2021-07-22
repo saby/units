@@ -8,6 +8,25 @@ let handlers = require('./lib/handlers');
 
 const logger = console;
 
+const randomPort = () => {
+   return 40000 + Math.ceil(Math.random() * 10000);
+};
+
+const getServer = (port, app, message) => {
+   return new Promise((resolve) => {
+      const server = http.createServer(app);
+
+      server.on('error', async () => {
+         resolve(await getServer(randomPort(), app, message));
+      });
+
+      server.listen(port, () => {
+         logger.log(message);
+         resolve([server, port]);
+      });
+   });
+};
+
 /**
  * Runs HTTP server which generates HTML page with testing
  *
@@ -20,7 +39,7 @@ const logger = console;
  * @param {String} [config.coverageCommand] Command that runs coverage HTML report building (for example, 'node node_modules/saby-units/cover test-isolated')
  * @param {String} [config.coverageReport] Coverage HTML report target path (например, '/artifacts/coverage/lcov-report/index.html')
  */
-exports.run = function(port, config) {
+exports.run = async (port, config) => {
    config = config || {};
    config.moduleType = config.moduleType || 'esm';
    config.root = config.root || '';
@@ -35,7 +54,7 @@ exports.run = function(port, config) {
    const mimeTypes = pckg.mimeTypes || {};
    const serverSignature = `"${pckg.description}" HTTP server v.${pckg.version} at port ${port} for "${path.resolve(config.root)}"`;
 
-   let staticConfig = {
+   const staticConfig = {
       setHeaders: function setHeaders(res, path) {
          let dotPos = path.lastIndexOf('.');
          if (dotPos > -1) {
@@ -47,7 +66,7 @@ exports.run = function(port, config) {
       }
    };
 
-   let app = connect()
+   const app = connect()
       .use(serveStatic(__dirname, staticConfig))
       .use(handlers.staticFiles(config, staticConfig))
       .use('/node_modules/', serveStatic(path.join(process.cwd(), 'node_modules'), staticConfig))
@@ -58,11 +77,9 @@ exports.run = function(port, config) {
       .use('/~test-list.json', handlers.testListJson(config))
       .use('/~coverage/', handlers.coverage(config));
 
-   let server = http.createServer(app).listen(port, () => {
-      logger.log(`Starting ${serverSignature}`);
-   });
+   let [server, usePort] = await getServer(port || randomPort(), app, `Starting ${serverSignature}`);
 
-   let shutDown = function(code) {
+   const shutDown = (code) => {
       if (server && code === 0) {
          logger.log(`Stopping ${serverSignature}`);
          server.close();
@@ -76,4 +93,9 @@ exports.run = function(port, config) {
       shutDown();
       process.kill(process.pid, 'SIGINT');
    });
+
+   return {
+      usePort,
+      server
+   };
 };
