@@ -6,11 +6,10 @@
       "request": "launch",
       "name": "test",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/node_modules/saby-units/cli.js",
+      "program": "${workspaceFolder}/node_modules/wasaby-cli/cli.js",
       "args": [
-        "--isolated",
-        "--inspect",
-        "--grep=''"
+        "--tasks=startTest",
+        "--report=console"
       ],
       "autoAttachChildProcesses": true,
       "console": "integratedTerminal"
