@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const util = require('../lib/util');
-const app = require('../browser');
+const server = require('../server');
+const app = require('../lib/browser');
 const config = util.getConfig();
 
 let report = '';
@@ -27,17 +28,29 @@ function buildUrl(parts) {
    return parts.scheme + '://' + parts.host + ':' + parts.port + '/' + parts.path + '?' + parts.query;
 }
 
-app.run(
-   buildUrl({
-      scheme: process.env['test_url_scheme'] || config.url.scheme,
-      host: provider === 'selenium' ? (process.env['test_url_host'] || config.url.host) : config.url.host,
-      port: process.env['test_url_port'] || config.url.port,
-      path: process.env['test_url_path'] || config.url.path,
-      query: process.env['test_url_query'] || config.url.query
-   }),
-   report,
-   coverageReport,
-   provider,
-   head,
-   config.driverPort
-);
+server.run(process.env['test_server_port'] || config.url.port, {
+   moduleType: config.moduleType,
+   root: config.root,
+   dependencies: config.dependencies,
+   tests: config.tests,
+   initializer: config.initializer,
+   coverage: config.coverage,
+   coverageCommand: config.coverageCommand,
+   coverageReport: config.htmlCoverageReport,
+   ignoreLeaks: config.ignoreLeaks
+}).then((configServer) => {
+   app.run({
+      url: buildUrl({
+         scheme: process.env['test_url_scheme'] || config.url.scheme,
+         host: provider === 'selenium' ? (process.env['test_url_host'] || config.url.host) : config.url.host,
+         port: configServer.usePort,
+         path: process.env['test_url_path'] || config.url.path,
+         query: process.env['test_url_query'] || config.url.query
+      }),
+      report,
+      coverageReport,
+      provider,
+      head,
+      server: configServer.server
+   });
+});

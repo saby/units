@@ -30,7 +30,6 @@
       "url": {
          "scheme": "http",
          "host": "localhost",
-         "port": 80,
          "path": "",
          "query": "reporter=XUnit"
       }

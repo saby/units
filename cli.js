@@ -109,23 +109,11 @@ if (options.jest) {
    }
 
    if (options.browser) {
-      browserArgs.push(
-         pathToScript('./queue'),
-         pathToScript('./cli/server')
-      );
+      browserArgs.push(pathToScript('./cli/browser'));
 
       if (options.head) {
          browserArgs.push('--head');
       }
-
-      if (options.coverage) {
-         browserArgs.push('--coverage');
-      }
-      if (options.config || options.configUnits) {
-         browserArgs.push(`--configUnits=${options.config || options.configUnits}`);
-      }
-
-      browserArgs.push(pathToScript('./cli/browser'));
 
       if (options.selenium) {
          browserArgs.push('--selenium');
