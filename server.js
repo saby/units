@@ -6,6 +6,8 @@ let pckg = require('./package.json');
 let {WS_CORE_PATH} = require('./lib/constants');
 let handlers = require('./lib/handlers');
 
+const open = require('open');
+
 const logger = console;
 
 const randomPort = () => {
@@ -21,7 +23,7 @@ const getServer = (port, app, message) => {
       });
 
       server.listen(port, () => {
-         logger.log(message);
+         logger.log(message.replace('$port$', port));
          resolve([server, port]);
       });
    });
@@ -52,7 +54,7 @@ exports.run = async (port, config) => {
    config.initializer = config.initializer || '';
 
    const mimeTypes = pckg.mimeTypes || {};
-   const serverSignature = `"${pckg.description}" HTTP server v.${pckg.version} at port ${port} for "${path.resolve(config.root)}"`;
+   const serverSignature = `"${pckg.description}" HTTP server v.${pckg.version} at port $port$ for "${path.resolve(config.root)}"`;
 
    const staticConfig = {
       setHeaders: function setHeaders(res, path) {
@@ -93,6 +95,10 @@ exports.run = async (port, config) => {
       shutDown();
       process.kill(process.pid, 'SIGINT');
    });
+
+   if (config.openPage) {
+      open(`http://localhost:${usePort}`);
+   }
 
    return {
       usePort,
