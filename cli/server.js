@@ -7,6 +7,10 @@ if (process.argv.indexOf('--coverage') > -1) {
    config.coverage = true;
 }
 
+if (process.argv.indexOf('--openPage') !== -1) {
+   config.openPage = true;
+}
+
 app.run(process.env['test_server_port'] || config.url.port, {
    moduleType: config.moduleType,
    root: config.root,
@@ -16,5 +20,6 @@ app.run(process.env['test_server_port'] || config.url.port, {
    coverage: config.coverage,
    coverageCommand: config.coverageCommand,
    coverageReport: config.htmlCoverageReport,
-   ignoreLeaks: config.ignoreLeaks
+   ignoreLeaks: config.ignoreLeaks,
+   openPage: config.openPage
 });
