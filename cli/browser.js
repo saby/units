@@ -47,8 +47,8 @@ server.run(process.env['test_server_port'] || config.url.port, {
          path: process.env['test_url_path'] || config.url.path,
          query: process.env['test_url_query'] || config.url.query
       }),
-      report,
-      coverageReport,
+      reportFile: report,
+      coverageReportFile: coverageReport,
       provider,
       head,
       server: configServer.server
