@@ -11,16 +11,23 @@ const path = join(root, 'build', 'index.js');
 const backup = join(root, 'build', 'index.backup.js');
 const patch = join(__dirname, 'lib', 'jest', 'index.patch.js');
 
-fs.rename(path, backup, error => {
-   if (error) {
-      throw error;
-   }
-   logger.log('Backup jasmine file "index.js"');
-});
+// на MacOS есть проблема с выполнением postinstall скриптов, он их выполняет даже в
+// ситуациях, когда они не должны исполняться. Поэтому перед тем как патчить файл,
+// проверим его физическое существование
+if (fs.existsSync(path)) {
+   fs.rename(path, backup, error => {
+      if (error) {
+         throw error;
+      }
+      logger.log('Backup jasmine file "index.js"');
+   });
+}
 
-fs.copyFile(patch, path, error => {
-   if (error) {
-      throw error;
-   }
-   logger.log('Patch jasmine file "index.js"');
-});
+if (fs.existsSync(patch)) {
+   fs.copyFile(patch, path, error => {
+      if (error) {
+         throw error;
+      }
+      logger.log('Patch jasmine file "index.js"');
+   });
+}
